@@ -10,22 +10,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RedirectIfAuthenticated
 {
-    public function handle($request, Closure $next, $guard = null)
+    public function handle(Request $request, Closure $next, string ...$guards): Response
     {
-        if (Auth::guard($guard)->check()) {
-            return $this->redirectTo($guard);
+        $guards = empty($guards) ? [null] : $guards;
+
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                return redirect(RouteServiceProvider::HOME);
+            }
         }
 
         return $next($request);
-    }
-
-    protected function redirectTo($guard)
-    {
-        switch ($guard) {
-            case 'users':
-                return redirect()->route('admin.dashboard');
-            default:
-                return redirect('/home');
-        }
     }
 }
